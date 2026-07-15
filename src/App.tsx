@@ -36,9 +36,7 @@ export default function App() {
 
   const [amount, setAmount] = useState(0);
   const [category, setCategory] = useState<Category>('grocery');
-  const [, setRewardPreference] = useState<RewardPreference>('cashback');
-
-  const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
+const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
   const [isRecommending, setIsRecommending] = useState(false);
   const [recommendError, setRecommendError] = useState<string | null>(null);
 
@@ -74,7 +72,6 @@ export default function App() {
   async function handlePaymentSubmit(amt: number, cat: Category, pref: RewardPreference) {
     setAmount(amt);
     setCategory(cat);
-    setRewardPreference(pref);
     setStep('result');
 
     if (!sessionId) return;
