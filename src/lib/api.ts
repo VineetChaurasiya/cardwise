@@ -4,7 +4,7 @@ const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
 
 async function request<T>(path: string, init?: RequestInit, token?: string): Promise<T> {
   const isFormData = init?.body instanceof FormData;
-  const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
+  const authHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: isFormData

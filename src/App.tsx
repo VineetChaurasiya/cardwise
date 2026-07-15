@@ -36,7 +36,7 @@ export default function App() {
 
   const [amount, setAmount] = useState(0);
   const [category, setCategory] = useState<Category>('grocery');
-  const [rewardPreference, setRewardPreference] = useState<RewardPreference>('cashback');
+  const [, setRewardPreference] = useState<RewardPreference>('cashback');
 
   const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
   const [isRecommending, setIsRecommending] = useState(false);
