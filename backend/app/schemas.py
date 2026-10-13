@@ -72,3 +72,4 @@ class RecommendResponse(BaseModel):
     points_earned: Optional[float] = None
     point_value_inr: Optional[float] = None
     comparison: list[CardComparison] = []
+    rewards_equal: bool = False

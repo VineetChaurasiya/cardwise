@@ -66,7 +66,7 @@ def recommend(body: RecommendRequest):
         "Respond as JSON with exactly these keys: "
         '{"card_id": string, "reward_type": "cashback" | "points", "rate_description": string, '
         '"points_earned": number or null, "point_value_inr": number or null, "explanation": string, '
-        '"source_quote": string or null, "comparison": array}.\n'
+        '"source_quote": string or null, "comparison": array, "rewards_equal": boolean}.\n'
         "- card_id must be one of the user's card ids.\n"
         "- reward_type is whichever the chosen card actually earns for this category (cashback or points), "
         "not necessarily the user's preference.\n"
@@ -86,7 +86,9 @@ def recommend(body: RecommendRequest):
         f"computed_reward: the actual reward this card earns for this specific payment of {body.amount}, "
         "calculated from the rate — e.g. '₹100 cashback', '100 pts', '60 miles'. "
         "If no rate info exists for this card for this category, set both to null.\n"
-        "- If none of the cards has a clear benefit at all, pick the lowest-fee card and say so in the explanation."
+        "- If none of the cards has a clear benefit at all, pick the lowest-fee card and say so in the explanation.\n"
+        "- rewards_equal: set to true if ALL of the user's cards earn the exact same reward rate for this payment "
+        "(e.g. all earn 1% cashback, or none earn anything). Set to false if one card is clearly better than the others."
     )
     payment_details = f"amount=₹{body.amount}, category={body.category}, mode={body.mode or 'unspecified'}"
     if body.merchant:
@@ -133,6 +135,8 @@ def recommend(body: RecommendRequest):
         if isinstance(entry, dict) and entry.get("card_id") in cards_by_id
     ]
 
+    rewards_equal = bool(result.get("rewards_equal", False))
+
     return RecommendResponse(
         card={
             "id": chosen_card["id"],
@@ -150,4 +154,5 @@ def recommend(body: RecommendRequest):
         points_earned=points_earned if isinstance(points_earned, (int, float)) else None,
         point_value_inr=point_value_inr if isinstance(point_value_inr, (int, float)) else None,
         comparison=comparison,
+        rewards_equal=rewards_equal,
     )

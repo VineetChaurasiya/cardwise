@@ -52,11 +52,20 @@ export default function RecommendationResult({ recommendation, isLoading, error,
         </div>
       ) : (
         <>
-          <div className="flex items-center gap-2 mb-2 text-fuchsia-400 text-sm font-medium">
-            <Sparkles className="w-4 h-4" /> Best match for this payment
-          </div>
+          {recommendation.rewardsEqual ? (
+            <div className="rounded-2xl bg-amber-500/10 border border-amber-500/30 px-5 py-4 mb-8 flex items-start gap-3">
+              <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-amber-200 text-sm leading-relaxed">
+                All your cards earn the same reward for this payment — you can use any of them.
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 mb-2 text-fuchsia-400 text-sm font-medium">
+              <Sparkles className="w-4 h-4" /> Best match for this payment
+            </div>
+          )}
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1">
-            Use your {recommendation.card.name}
+            {recommendation.rewardsEqual ? `Any card works — e.g. ${recommendation.card.name}` : `Use your ${recommendation.card.name}`}
           </h1>
           <p className="text-white/60 mb-8">
             For ₹{amount.toLocaleString('en-IN')} on {CATEGORY_LABELS[category]}

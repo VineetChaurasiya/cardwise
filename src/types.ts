@@ -53,6 +53,7 @@ export interface Recommendation {
   pointsEarned?: number;
   pointValueInr?: number;
   comparison: CardComparison[];
+  rewardsEqual: boolean;
 }
 
 export type DocStatus = 'processing' | 'ready' | 'error';
