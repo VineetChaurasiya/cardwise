@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Shield, User } from 'lucide-react';
-import type { Category, CreditCard, Recommendation, RewardPreference } from './types';
+import type { Category, CreditCard, PaymentMode, Recommendation, RewardPreference } from './types';
 import { createSession, fetchCards, fetchRecommendation, getUserCardIds, setUserCardIds } from './lib/api';
 import Onboarding from './components/Onboarding';
 import PaymentForm from './components/PaymentForm';
@@ -69,7 +69,7 @@ const [recommendation, setRecommendation] = useState<Recommendation | null>(null
     setStep('payment');
   }
 
-  async function handlePaymentSubmit(amt: number, cat: Category, pref: RewardPreference) {
+  async function handlePaymentSubmit(amt: number, cat: Category, pref: RewardPreference, mode: PaymentMode, merchant?: string) {
     setAmount(amt);
     setCategory(cat);
     setStep('result');
@@ -78,7 +78,7 @@ const [recommendation, setRecommendation] = useState<Recommendation | null>(null
     setIsRecommending(true);
     setRecommendError(null);
     try {
-      const rec = await fetchRecommendation(sessionId, amt, cat, pref);
+      const rec = await fetchRecommendation(sessionId, amt, cat, pref, mode, merchant);
       setRecommendation(rec);
     } catch (err) {
       setRecommendError(err instanceof Error ? err.message : 'Failed to get a recommendation');

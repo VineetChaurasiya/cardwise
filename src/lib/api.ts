@@ -161,10 +161,12 @@ export async function fetchRecommendation(
   amount: number,
   category: Category,
   rewardPreference: RewardPreference,
+  mode?: string,
+  merchant?: string,
 ): Promise<Recommendation | null> {
   const res = await request<ApiRecommendResponse>('/recommend', {
     method: 'POST',
-    body: JSON.stringify({ session_id: sessionId, amount, category, reward_preference: rewardPreference }),
+    body: JSON.stringify({ session_id: sessionId, amount, category, reward_preference: rewardPreference, mode, merchant }),
   });
   if (!res.card) return null;
   return {

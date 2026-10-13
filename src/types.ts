@@ -1,12 +1,20 @@
 export type Category =
   | 'grocery'
-  | 'utility'
-  | 'education'
   | 'dining'
+  | 'online_shopping'
   | 'travel'
   | 'fuel'
-  | 'online_shopping'
-  | 'entertainment';
+  | 'utility'
+  | 'entertainment'
+  | 'education'
+  | 'gold_jewellery'
+  | 'insurance'
+  | 'rent'
+  | 'health_pharmacy'
+  | 'electronics'
+  | 'foreign_currency';
+
+export type PaymentMode = 'online' | 'offline';
 
 export interface RewardRule {
   category: Category;
