@@ -26,7 +26,9 @@ def recommend(body: RecommendRequest):
     cards_res = supabase.table("cards").select("*").in_("id", card_ids).execute()
     cards_by_id = {row["id"]: row for row in cards_res.data}
 
-    query = f"Best card for a {body.category} payment of {body.amount}, {body.reward_preference} rewards"
+    mode_label = f"{body.mode} " if body.mode else ""
+    merchant_label = f" on {body.merchant}" if body.merchant else ""
+    query = f"Best card for a {mode_label}{body.category} payment of {body.amount}{merchant_label}, {body.reward_preference} rewards"
     [query_embedding] = embed_texts([query])
 
     chunks_res = supabase.rpc(
@@ -55,6 +57,12 @@ def recommend(body: RecommendRequest):
         "reward type for this category, still recommend the single best overall card and "
         "clearly say in the explanation that none of their cards earn the preferred reward "
         "type here, so you picked the next best option instead.\n\n"
+        "IMPORTANT: The payment mode (online or offline) is critical. Only consider rewards "
+        "that apply to the stated mode. For example, if mode=online, ignore offline-only cashback "
+        "rates and look for online/e-commerce/app-specific rewards. If a merchant/app is specified, "
+        "prioritise any merchant-specific or platform-specific rewards mentioned in the context "
+        "(e.g. extra cashback on Swiggy, Amazon, Zomato). Never recommend an offline benefit for "
+        "an online payment or vice versa.\n\n"
         "Respond as JSON with exactly these keys: "
         '{"card_id": string, "reward_type": "cashback" | "points", "rate_description": string, '
         '"points_earned": number or null, "point_value_inr": number or null, "explanation": string, '
@@ -80,9 +88,14 @@ def recommend(body: RecommendRequest):
         "If no rate info exists for this card for this category, set both to null.\n"
         "- If none of the cards has a clear benefit at all, pick the lowest-fee card and say so in the explanation."
     )
+    payment_details = f"amount=₹{body.amount}, category={body.category}, mode={body.mode or 'unspecified'}"
+    if body.merchant:
+        payment_details += f", merchant/app={body.merchant}"
+    payment_details += f", preferred reward type={body.reward_preference}"
+
     user_prompt = (
         f"User's cards: {card_names}\n"
-        f"Payment: amount={body.amount}, category={body.category}, preferred reward type={body.reward_preference}\n\n"
+        f"Payment: {payment_details}\n\n"
         f"Context:\n{context}"
     )
 

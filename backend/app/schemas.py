@@ -49,6 +49,8 @@ class RecommendRequest(BaseModel):
     amount: float
     category: str
     reward_preference: str  # "cashback" or "points"
+    mode: Optional[str] = None       # "online" or "offline"
+    merchant: Optional[str] = None   # e.g. "Swiggy", "Amazon"
 
 
 class CardComparison(BaseModel):
