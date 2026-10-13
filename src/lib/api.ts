@@ -1,6 +1,6 @@
 import type { CardDocument, Category, CreditCard, Recommendation, RewardPreference } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL ?? 'https://cardwise-kwh4.onrender.com/api';
 
 async function request<T>(path: string, init?: RequestInit, token?: string): Promise<T> {
   const isFormData = init?.body instanceof FormData;
