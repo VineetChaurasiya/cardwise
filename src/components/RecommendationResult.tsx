@@ -1,4 +1,4 @@
-import { ArrowLeft, CheckCircle2, Loader2, Quote, Sparkles, RotateCcw } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Info, Loader2, Quote, Sparkles, RotateCcw } from 'lucide-react';
 import type { Category, Recommendation } from '../types';
 import { CATEGORY_LABELS } from '../data/cards';
 import CardVisual from './CardVisual';
@@ -157,6 +157,20 @@ export default function RecommendationResult({ recommendation, isLoading, error,
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {recommendation.secondaryCard && recommendation.secondaryNote && (
+            <div className="rounded-2xl bg-white/[0.03] border border-white/10 px-5 py-4 mb-8">
+              <div className="flex items-center gap-2 mb-2 text-sky-400 text-xs font-semibold uppercase tracking-wider">
+                <Info className="w-3.5 h-3.5" /> Also consider
+              </div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${recommendation.secondaryCard.gradient} shrink-0`} />
+                <span className="text-white font-medium text-sm">{recommendation.secondaryCard.name}</span>
+                <span className="text-white/40 text-xs">{recommendation.secondaryCard.issuer}</span>
+              </div>
+              <p className="text-white/50 text-sm leading-relaxed">{recommendation.secondaryNote}</p>
             </div>
           )}
 

@@ -155,6 +155,8 @@ interface ApiRecommendResponse {
   point_value_inr?: number;
   comparison?: ApiCardComparison[];
   rewards_equal?: boolean;
+  secondary_card?: ApiCreditCard | null;
+  secondary_note?: string | null;
 }
 
 export async function fetchRecommendation(
@@ -179,6 +181,8 @@ export async function fetchRecommendation(
     pointsEarned: res.points_earned,
     pointValueInr: res.point_value_inr,
     rewardsEqual: res.rewards_equal ?? false,
+    secondaryCard: res.secondary_card ? mapCard(res.secondary_card) : undefined,
+    secondaryNote: res.secondary_note ?? undefined,
     comparison: (res.comparison ?? []).map((c) => ({
       cardId: c.card_id,
       issuer: c.issuer,

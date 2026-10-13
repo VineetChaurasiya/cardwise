@@ -54,6 +54,8 @@ export interface Recommendation {
   pointValueInr?: number;
   comparison: CardComparison[];
   rewardsEqual: boolean;
+  secondaryCard?: CreditCard;
+  secondaryNote?: string;
 }
 
 export type DocStatus = 'processing' | 'ready' | 'error';

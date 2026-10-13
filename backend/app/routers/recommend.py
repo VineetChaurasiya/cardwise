@@ -51,22 +51,27 @@ def recommend(body: RecommendRequest):
 
     system_prompt = (
         "You recommend the single best credit card for a payment, using only the provided "
-        "document context. The user has said they prefer "
-        f"{preference_label} for this payment. Strongly prefer a card whose benefit for this "
-        "category matches that preference. If none of the user's cards offer that preferred "
-        "reward type for this category, still recommend the single best overall card and "
-        "clearly say in the explanation that none of their cards earn the preferred reward "
-        "type here, so you picked the next best option instead.\n\n"
-        "IMPORTANT: The payment mode (online or offline) is critical. Only consider rewards "
-        "that apply to the stated mode. For example, if mode=online, ignore offline-only cashback "
-        "rates and look for online/e-commerce/app-specific rewards. If a merchant/app is specified, "
-        "prioritise any merchant-specific or platform-specific rewards mentioned in the context "
-        "(e.g. extra cashback on Swiggy, Amazon, Zomato). Never recommend an offline benefit for "
-        "an online payment or vice versa.\n\n"
+        "document context.\n\n"
+        "CASHBACK vs POINTS — this distinction is critical:\n"
+        "- 'cashback' means ONLY direct cashback or statement credit — a real discount with no redemption needed. "
+        "Never recommend a points/miles/voucher card as the primary when the user wants cashback.\n"
+        "- 'points' means reward points, miles, or any redeemable currency.\n"
+        f"The user has said they prefer {preference_label} for this payment.\n"
+        "If the user wants cashback but none of their cards offer direct cashback for this category, "
+        "still pick the best cashback card available (even if the rate is low) and explain the situation.\n\n"
+        "SECONDARY RECOMMENDATION: If the user wants cashback AND there is a points card whose points "
+        "can be redeemed for cash/statement credit at a rate that equals or beats the primary cashback card's "
+        "effective value, include it as a secondary recommendation with a note explaining the effective rupee value. "
+        "Only include secondary if the context explicitly states a redemption rate for that card's points. "
+        "If no such card exists, set secondary_card_id and secondary_note to null.\n\n"
+        "PAYMENT MODE: Only consider rewards that apply to the stated mode (online/offline). "
+        "If a merchant/app is specified, prioritise merchant-specific rewards. "
+        "Never recommend an offline benefit for an online payment or vice versa.\n\n"
         "Respond as JSON with exactly these keys: "
         '{"card_id": string, "reward_type": "cashback" | "points", "rate_description": string, '
         '"points_earned": number or null, "point_value_inr": number or null, "explanation": string, '
-        '"source_quote": string or null, "comparison": array, "rewards_equal": boolean}.\n'
+        '"source_quote": string or null, "comparison": array, "rewards_equal": boolean, '
+        '"secondary_card_id": string or null, "secondary_note": string or null}.\n'
         "- card_id must be one of the user's card ids.\n"
         "- reward_type is whichever the chosen card actually earns for this category (cashback or points), "
         "not necessarily the user's preference.\n"
@@ -88,7 +93,12 @@ def recommend(body: RecommendRequest):
         "If no rate info exists for this card for this category, set both to null.\n"
         "- If none of the cards has a clear benefit at all, pick the lowest-fee card and say so in the explanation.\n"
         "- rewards_equal: set to true if ALL of the user's cards earn the exact same reward rate for this payment "
-        "(e.g. all earn 1% cashback, or none earn anything). Set to false if one card is clearly better than the others."
+        "(e.g. all earn 1% cashback, or none earn anything). Set to false if one card is clearly better than the others.\n"
+        "- secondary_card_id: the card_id of a points card worth mentioning as an alternative, only when user wants cashback "
+        "and that card's points redeem to cash at equal or better value. Must be one of the user's card ids, or null.\n"
+        "- secondary_note: a single sentence explaining the secondary card's effective value, e.g. "
+        "'HDFC Millennia earns 1,000 pts (worth ₹500 at 0.5₹/pt) — effectively 5% back, matching the cashback rate.' "
+        "Null if no secondary card."
     )
     payment_details = f"amount=₹{body.amount}, category={body.category}, mode={body.mode or 'unspecified'}"
     if body.merchant:
@@ -137,6 +147,16 @@ def recommend(body: RecommendRequest):
 
     rewards_equal = bool(result.get("rewards_equal", False))
 
+    secondary_card_data = None
+    secondary_card_id = result.get("secondary_card_id")
+    if secondary_card_id and secondary_card_id in cards_by_id:
+        sc = cards_by_id[secondary_card_id]
+        secondary_card_data = {
+            "id": sc["id"], "issuer": sc["issuer"], "name": sc["name"],
+            "network": sc["network"], "gradient": sc["gradient"],
+            "annual_fee": sc["annual_fee"], "rewards": [],
+        }
+
     return RecommendResponse(
         card={
             "id": chosen_card["id"],
@@ -155,4 +175,6 @@ def recommend(body: RecommendRequest):
         point_value_inr=point_value_inr if isinstance(point_value_inr, (int, float)) else None,
         comparison=comparison,
         rewards_equal=rewards_equal,
+        secondary_card=secondary_card_data,
+        secondary_note=result.get("secondary_note"),
     )
