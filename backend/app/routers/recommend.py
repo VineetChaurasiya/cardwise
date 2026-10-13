@@ -1,4 +1,5 @@
 import json
+import re
 
 from fastapi import APIRouter, HTTPException
 
@@ -124,9 +125,11 @@ def recommend(body: RecommendRequest):
 
     estimated_reward = None
     if reward_type == "cashback":
-        rate_digits = "".join(ch for ch in rate_description if ch.isdigit() or ch == ".")
-        if rate_digits:
-            estimated_reward = f"₹{round((float(rate_digits) / 100) * body.amount):,} est. value"
+        m = re.search(r"(\d+(?:\.\d+)?)", rate_description or "")
+        if m:
+            rate_pct = float(m.group(1))
+            if 0 < rate_pct <= 100:  # sanity check: must be a percentage
+                estimated_reward = f"₹{round((rate_pct / 100) * body.amount):,} est. value"
     elif reward_type == "points" and isinstance(points_earned, (int, float)) and isinstance(point_value_inr, (int, float)):
         estimated_reward = f"₹{round(points_earned * point_value_inr):,} est. value"
 
