@@ -70,8 +70,8 @@ def recommend(body: RecommendRequest):
         "Never recommend an offline benefit for an online payment or vice versa.\n\n"
         "Respond as JSON with exactly these keys: "
         '{"card_id": string, "reward_type": "cashback" | "points", "rate_description": string, '
-        '"points_earned": number or null, "point_value_inr": number or null, "explanation": string, '
-        '"source_quote": string or null, "comparison": array, "rewards_equal": boolean, '
+        '"points_earned": number or null, "point_value_inr": number or null, "reward_cap_inr": number or null, '
+        '"explanation": string, "source_quote": string or null, "comparison": array, "rewards_equal": boolean, '
         '"secondary_card_id": string or null, "secondary_note": string or null}.\n'
         "- card_id must be one of the user's card ids.\n"
         "- reward_type is whichever the chosen card actually earns for this category (cashback or points), "
@@ -81,6 +81,10 @@ def recommend(body: RecommendRequest):
         "to compute how many points this exact payment would earn. Otherwise null.\n"
         "- point_value_inr: only fill this in if the context explicitly states a points-to-rupee redemption rate "
         "for this card. Never estimate or guess a rate. Otherwise null.\n"
+        "- reward_cap_inr: if the document context explicitly states a maximum cashback or points cap per "
+        "statement cycle / month / quarter for this category or overall, set this to that cap amount in rupees "
+        "(e.g. if it says 'max cashback ₹4,000 per statement cycle', set reward_cap_inr=4000). "
+        "Only set from the context — never guess. Otherwise null.\n"
         "- source_quote must be the exact sentence (or short span), copied verbatim character-for-character from "
         "the context above, that justifies the reward rate/points/value you used for this decision. Do not "
         "paraphrase or summarize. If you relied on multiple sentences, quote the single most decisive one. If "
@@ -122,16 +126,27 @@ def recommend(body: RecommendRequest):
     rate_description = result.get("rate_description", "")
     points_earned = result.get("points_earned")
     point_value_inr = result.get("point_value_inr")
+    reward_cap_inr = result.get("reward_cap_inr")
+    if isinstance(reward_cap_inr, (int, float)) and reward_cap_inr <= 0:
+        reward_cap_inr = None
 
     estimated_reward = None
     if reward_type == "cashback":
         m = re.search(r"(\d+(?:\.\d+)?)", rate_description or "")
         if m:
             rate_pct = float(m.group(1))
-            if 0 < rate_pct <= 100:  # sanity check: must be a percentage
-                estimated_reward = f"₹{round((rate_pct / 100) * body.amount):,} est. value"
+            if 0 < rate_pct <= 100:
+                raw = round((rate_pct / 100) * body.amount)
+                if isinstance(reward_cap_inr, (int, float)) and raw > reward_cap_inr:
+                    estimated_reward = f"₹{round(reward_cap_inr):,} est. value (capped at ₹{round(reward_cap_inr):,}/cycle)"
+                else:
+                    estimated_reward = f"₹{raw:,} est. value"
     elif reward_type == "points" and isinstance(points_earned, (int, float)) and isinstance(point_value_inr, (int, float)):
-        estimated_reward = f"₹{round(points_earned * point_value_inr):,} est. value"
+        raw = round(points_earned * point_value_inr)
+        if isinstance(reward_cap_inr, (int, float)) and raw > reward_cap_inr:
+            estimated_reward = f"₹{round(reward_cap_inr):,} est. value (capped at ₹{round(reward_cap_inr):,}/cycle)"
+        else:
+            estimated_reward = f"₹{raw:,} est. value"
 
     raw_comparison = result.get("comparison") or []
     comparison = [
