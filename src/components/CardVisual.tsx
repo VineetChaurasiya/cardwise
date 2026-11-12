@@ -16,7 +16,8 @@ export default function CardVisual({ card, selected, compact, onClick }: Props) 
       className={`relative w-full ${compact ? 'aspect-[1.8/1]' : 'aspect-[1.586/1]'} rounded-2xl p-5 text-left bg-gradient-to-br ${card.gradient}
         shadow-lg shadow-black/30 transition-all duration-200 overflow-hidden
         ${onClick ? 'cursor-pointer hover:scale-[1.02] hover:shadow-xl' : 'cursor-default'}
-        ${selected ? 'ring-4 ring-white/80 scale-[1.02]' : 'ring-1 ring-white/10'}`}
+        ${selected ? 'scale-[1.02]' : ''}`}
+        style={selected ? { boxShadow: '0 0 0 3px #d2b47e' } : { boxShadow: '0 0 0 1px rgba(255,255,255,0.08)' }}
     >
       <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-white/10 blur-2xl" />
       <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full bg-black/10 blur-2xl" />

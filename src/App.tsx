@@ -88,20 +88,25 @@ const [recommendation, setRecommendation] = useState<Recommendation | null>(null
   }
 
   return (
-    <div className="min-h-svh bg-[#0b0a14] bg-[radial-gradient(ellipse_at_top,_rgba(139,69,255,0.18),_transparent_60%)]">
-      <header className="px-6 py-5 max-w-5xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-fuchsia-500 to-indigo-600" />
-          <span className="text-white font-semibold tracking-tight">CardWise</span>
+    <div className="min-h-svh" style={{ background: 'var(--bg-base)' }}>
+      <header className="px-6 py-5 max-w-5xl mx-auto flex items-center justify-between border-b" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-md flex items-center justify-center text-sm font-bold"
+            style={{ background: 'var(--gold)', color: '#0b0f0d' }}>
+            C
+          </div>
+          <span className="font-semibold tracking-tight text-sm" style={{ color: 'var(--text-base)', fontFamily: 'Inter, sans-serif', letterSpacing: '0.08em' }}>CARDWISE</span>
         </div>
 
-        <div className="flex items-center gap-1 rounded-xl bg-white/5 border border-white/10 p-1">
+        <div className="flex items-center gap-1 rounded-full p-1" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)' }}>
           <button
             onClick={() => setView('user')}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition
-              ${view === 'user' ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white/80'}`}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition`}
+            style={view === 'user'
+              ? { background: 'var(--gold)', color: '#0b0f0d' }
+              : { color: 'var(--text-muted)' }}
           >
-            <User className="w-3.5 h-3.5" /> User
+            <User className="w-3 h-3" /> User
           </button>
           <button
             onClick={() => {
@@ -111,18 +116,20 @@ const [recommendation, setRecommendation] = useState<Recommendation | null>(null
                 setShowAdminLogin(true);
               }
             }}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition
-              ${view === 'admin' ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white/80'}`}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition`}
+            style={view === 'admin'
+              ? { background: 'var(--gold)', color: '#0b0f0d' }
+              : { color: 'var(--text-muted)' }}
           >
-            <Shield className="w-3.5 h-3.5" /> Admin
+            <Shield className="w-3 h-3" /> Admin
           </button>
         </div>
       </header>
 
       {loadError ? (
         <div className="max-w-xl mx-auto px-6 py-24 text-center">
-          <p className="text-white font-semibold mb-2">Couldn't reach the backend</p>
-          <p className="text-white/50 text-sm">{loadError}</p>
+          <p className="font-semibold mb-2" style={{ color: 'var(--text-base)' }}>Couldn't reach the backend</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{loadError}</p>
         </div>
       ) : view === 'admin' && adminToken ? (
         <AdminPanel
